@@ -19,6 +19,10 @@ These files are used by multiple scripts.
 |redditGetToken.py|Request a fresh API token and cache it - only needed if the current token has expired|
 |redditSecrets.py|Contains all of your secret stuff (passwords and user IDs). Also reads the API token from the cache.|
 
+**Note**: reddidSecrets.py is a template. You will need to fill in **your** reddit API credentials into the file
+as described in the comments. Refer to the [Reddit API overview](https://www.reddit.com/wiki/api/) wiki page for
+pointers about the reddit API including links to getting credentials if you need them.
+
 ## Digest files
 
 These files are used to extract posts and generate the monthly digest.
