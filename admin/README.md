@@ -33,7 +33,7 @@ These files are used to extract posts and generate the monthly digest.
 |redditDigestGenerate.py|Processes the extracted post summaries and generates the digest as Markdown. If provided, a header and footer will be included in the generated post.|
 
 
-## Post activity extraction
+## Post/User activity extraction
 
 This script is used to extract a list of users replying to a given post.
 
@@ -41,4 +41,5 @@ This script is used to extract a list of users replying to a given post.
 |File|Description|
 |---|---|
 |redditParseMilestonePost.py|Given a post, produce a list of user IDs that have commented on it.|
+|redditUserActivitySummary.py|Given a user id (e.g. gm310509 - not u/gm310509) produce a summary of the subreddits the user has posted to|
 
