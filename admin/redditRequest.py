@@ -6,9 +6,11 @@ import requests
 import json
 
 
-def redditRequest(requestText, requestParameters,  responseFilename = None, verbose = False):
+def redditRequest(requestText, requestParameters,  responseFilename = None, sendToken = True, verbose = False):
 
-  userAgent = "{}/0.0.1".format(redditSecrets.redditAppName)
+  userAgent = "generic/0.0.1"
+  if (sendToken):
+    userAgent = "{}/0.0.1".format(redditSecrets.redditAppName)
   # setup our header info, which gives reddit a brief description of our app
   headers = {'User-Agent': redditSecrets.userAgent}
 
@@ -23,16 +25,20 @@ def redditRequest(requestText, requestParameters,  responseFilename = None, verb
     print("\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n")
 
 
-  # add authorization to our headers dictionary
-  headers = {**headers, **{'Authorization': f"bearer {redditSecrets.TOKEN}"}}
+  if (sendToken):
+    # add authorization to our headers dictionary
+    headers = {**headers, **{'Authorization': f"bearer {redditSecrets.TOKEN}"}}
 
   res = requests.get(requestText, headers=headers, params=requestParameters)
+  jsonStr = ""
   if res.status_code != 200:
     print(f"ERROR: Response code: {res.status_code}: {res}")
+    return
   if verbose:
     print("response:\n\n")
     print (res)
   headers = res.headers
+  jsonStr = json.dumps(res.json())
   if "X-Ratelimit-Used" in headers:
     rateLimitUsed = headers["X-Ratelimit-Used"]
     rateLimitRemaining = headers["X-Ratelimit-Remaining"]
@@ -40,8 +46,7 @@ def redditRequest(requestText, requestParameters,  responseFilename = None, verb
     print (f"reddit request rate limits: Used: {rateLimitUsed}, Remaining: {rateLimitRemaining}, Reset: {rateLimitReset}")
   else:
     print("No rate limiting information in response")
-    
-  jsonStr = json.dumps(res.json())
+  
 
 
   if verbose:
@@ -84,6 +89,7 @@ if __name__ == "__main__":
   requestText = "https://oauth.reddit.com/r/arduino/comments/zlwtq4/half_a_million_subscribers_enroll_here_to_receive/"
   requestText = "https://oauth.reddit.com/r/arduino/comments/11uqm3f/chatgpt_is_a_menace/"
   requestText = "https://www.reddit.com/r/arduino/comments/12dxdam/diy_arduino_video_game_console_arduino_pro_micro/"
+  requestText = "https://oauth.reddit.com/r/arduino/comments/15cdeya/new_to_all_this_struggling_to_set_it_up"
   
   #requestText = "https://oauth.reddit.com/r/arduino/about/contributors"
   #requestText = "https://oauth.reddit.com/r/arduino/about/moderators"#
@@ -98,6 +104,6 @@ if __name__ == "__main__":
   
   print("Sending: {}".format(requestText))
   responseFileName = "response.json"
-  jsonStr = redditRequest(requestText, requestParameters, responseFileName, verbose = False)
+  jsonStr = redditRequest(requestText, requestParameters, responseFileName, verbose = True)
   print(jsonStr)
   print(f"response written to {responseFileName}")
