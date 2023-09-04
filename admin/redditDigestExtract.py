@@ -119,7 +119,7 @@ while continueProcessing:
   print(f"requesting page {pageNo}, lastPostId: {lastPostId}")
   responseFileName = responseFileNameTemplate.format(pageNo)
   responseFileNamePath = os.path.join(responseFilePath, responseFileName)
-  jsonStr = redditRequest(requestText, requestParameters, responseFileNamePath, False)
+  jsonStr = redditRequest(requestText, requestParameters, responseFileNamePath, verbose=False)
   print(f"Response file written {responseFileNamePath}")
 
   jsonData = json.loads(jsonStr)
