@@ -143,6 +143,12 @@ def sortedByScore(dictionary, score, post):
 def escapeMarkdown(str):
   #return  re.sub(r"([\:\[\]\(\)\|\#])", r"\\\1", str)
   #return  re.sub(r"([\[\]\|\#])", r"\\\1", str)
+  
+  # Attempt to deal with italicisation of _name_
+  matcher = re.match(r"_(\w*)_", str)
+  if (matcher != None):
+    str = f"\\\\_{matcher.group(1)}\\\\_"
+  
   return  re.sub(r"([\[\]\|\#])", r"", str)
 
 # Summarise the posts in various fashions.
@@ -182,7 +188,7 @@ def postToMarkdownTableRow(mdFile, post):
   titleText = post.postTitle
   if len(titleText) > MAX_TITLE_LEN:
     titleText = titleText[0: MAX_TITLE_LEN - 1] + "..."
-  mdFile.write(f"|[{escapeMarkdown(titleText)}]({post.relativeUrlText})|u/{post.author}|{post.score:,}|{post.numComments:,}|\n")
+  mdFile.write(f"|[{escapeMarkdown(titleText)}]({post.relativeUrlText})|u/{escapeMarkdown(post.author)}|{post.score:,}|{post.numComments:,}|\n")
 
 
 
