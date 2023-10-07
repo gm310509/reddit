@@ -220,7 +220,7 @@ def generateDigestMarkdown(rootDir, markdownFileName, subredditName, targetDate)
       print(f"No header for {subredditName}-{targetDate} ({headerFileName})")
 
 
-    mdFile.write(f"\n\n## Ardiomp Wiki and Other Resources\n");
+    mdFile.write(f"\n\n## Arduino Wiki and Other Resources\n");
     mdFile.write(f"\nDon't forget to check out our [wiki](https://www.reddit.com/r/arduino/wiki/index/)\n");
     mdFile.write(f"for up to date guides, FAQ, milestones, glossary and more.\n\n")
     mdFile.write(f"You can find our [wiki](https://www.reddit.com/r/arduino/wiki/index/) at the top of the r/Arduino\n")
