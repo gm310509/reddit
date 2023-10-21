@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # Program to extract reddit posts for a given sub.
 # Arguments - subreddit name

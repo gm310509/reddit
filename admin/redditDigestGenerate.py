@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 #### Generate the reddit monthly digest for a given subreddit and target date.
 #
