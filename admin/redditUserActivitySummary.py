@@ -1,8 +1,23 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import json
 import requests
 import sys
+
+
+from dataclasses import dataclass
+
+
+# A class to hold the summary details extracted from the user activty
+# about each post.
+# the sole purpose of this class is to name the fields
+# being stored (for easier and less error prone access).
+@dataclass
+class ActivitySummary:
+  posts: int
+  comments: int
+  others: int
+
 
 #data from:
 # curl -A "testClient/1.0"  https://www.reddit.com/user/radarOverhead.json?limit=100 >radarOverhead_user.json
@@ -30,14 +45,26 @@ def processUserActivity(jsonData):
         subredditName = post["subreddit"]
 
     if subredditName in userActivity:
-      userActivity[subredditName] += 1
+      subActivity = userActivity[subredditName]
     else:
-      userActivity[subredditName] = 1
+      subActivity = ActivitySummary(0, 0, 0)
+      userActivity[subredditName] = subActivity
     #print(f"Subreddit name: {subredditName}")
+   
+    if ("kind" in elem):
+      kind = elem["kind"]
+      if kind == "t3":
+        subActivity.posts += 1
+      elif kind == "t1":
+        subActivity.comments += 1
+      else: 
+        subActivity.others += 1
 
-  print(f"Summary of posts for user: {userName}")    
+  print(f"Summary of posts for user: {userName}")
+  print("posts cmnts other subreddit")
   for subredditName in sorted(userActivity):
-    print ("{:5}  {}".format(userActivity[subredditName], subredditName))
+    subActivity = userActivity[subredditName]
+    print ("{:5} {:5} {:5} {}".format(subActivity.posts, subActivity.comments, subActivity.others, subredditName))
     subredditCnt += 1
   print ("Total: {} posts (max:{}) in {} subreddits".format(postCnt, retrievalLimit, subredditCnt))
 
