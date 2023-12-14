@@ -35,23 +35,33 @@ def getToken(verbose = False, authenticatorToken = None):
   res = requests.post('https://www.reddit.com/api/v1/access_token',
                       auth=auth, data=data, headers=headers)
 
+  response = res.json()
   if verbose:
     print("OAuth response:\n\n")
     print(res)
     print("\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n")
-    print(res.json())
+    print(response)
 
   # convert response to JSON and pull access_token value
-  TOKEN = res.json()['access_token']
+  if ("access_token" in response):
+    TOKEN = response['access_token']
 
-  if verbose:
-    print("\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n")
-    print(f"The following will be saved to {redditSecrets.tokenFileName}")
-    print("\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n")
-    print(f"TOKEN={TOKEN}")
+    if verbose:
+      print("\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n")
+      print(f"The following will be saved to {redditSecrets.tokenFileName}")
+      print("\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n")
+      print(f"TOKEN={TOKEN}")
 
-  with open(redditSecrets.tokenFileName, 'w') as f:
-    f.write(f"TOKEN={TOKEN}")
+    with open(redditSecrets.tokenFileName, 'w') as f:
+      f.write(f"TOKEN={TOKEN}")
+  elif ("error" in response):
+    errorText = response["error"]
+    print("\n\nError response from reddit")
+    print(f"Error text: {errorText}")
+    print("consider using 2FA (provide an authenticator code for reddit as the 1st parameter to this script)")
+  else:
+    print("Unrecognised response from reddit:")
+    print(response)
 
   if verbose:
     print("Done.")
