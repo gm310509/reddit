@@ -6,7 +6,7 @@ import requests
 import json
 
 
-def redditRequest(requestText, requestParameters,  responseFilename = None, sendToken = True, verbose = False):
+def redditRequest(requestText, requestParameters,  responseFilename = None, sendToken = True, verbose = False, authToken = None):
 
   userAgent = "generic/0.0.1"
   if (sendToken):

@@ -23,6 +23,10 @@ These files are used by multiple scripts.
 as described in the comments. Refer to the [Reddit API overview](https://www.reddit.com/wiki/api/) wiki page for
 pointers about the reddit API including links to getting credentials if you need them.
 
+**Note 2**: If you have enabled 2FA, then you will need to provide an authenticator token when getting the OAUTH2 token (redditGetToken.py).
+This can be done simply by entering your 2FA authenticator code as the first **and only** parameter to the redditGetToken.py script.  
+Once you have your OAUTH2 token, you no longer need the 2FA code for as long as the OAUTH2 token is valid.
+
 ## Digest files
 
 These files are used to extract posts and generate the monthly digest.

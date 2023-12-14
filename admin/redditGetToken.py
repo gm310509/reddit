@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 
+import sys
 import redditSecrets
 import requests
 
-def getToken(verbose = False):
+def getToken(verbose = False, authenticatorToken = None):
   if verbose:
     print("reddit App Name:  {}".format(redditSecrets.redditAppName))
     print("reddit client Id: {}".format(redditSecrets.redditClientId))
@@ -19,9 +20,13 @@ def getToken(verbose = False):
   auth = requests.auth.HTTPBasicAuth(redditSecrets.redditClientId, redditSecrets.redditSecret)
 
   # here we pass our login method (password), username, and password
+  password = redditSecrets.redditUserPwd
+  if (authenticatorToken is not None):
+    password += ":" + authenticatorToken
+
   data = {'grant_type': 'password',
           'username': redditSecrets.redditUserId,
-          'password': redditSecrets.redditUserPwd }
+          'password': password }
 
   # setup our header info, which gives reddit a brief description of our app
   headers = {'User-Agent': redditSecrets.userAgent}
@@ -52,5 +57,14 @@ def getToken(verbose = False):
     print("Done.")
 
 if __name__ == "__main__":
-  getToken(True)
+  authenticatorToken = None
+  if (len(sys.argv) == 2):
+    if (sys.argv[1] == "-h"):
+      print("usage:")
+      print(f"  {sys.argv[0]} [ -h | 2FA authenticator token ]")
+      sys.exit(0)
+
+    authenticatorToken = sys.argv[1]
+  
+  getToken(True, authenticatorToken)
 
