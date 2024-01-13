@@ -17,7 +17,9 @@ def processPost(postData):
 
   lastPostId = postData["name"]     # the lastPostId is what is used to get the next page of posts.
 
-  removedFlag = postData["removed"]
+  removedFlag = False
+  if "removed" in postData:
+    postData["removed"]
   if removedFlag:
     print(f"Skipping removed post {lastPostId} from u/{author} - title: {titleText}")
 

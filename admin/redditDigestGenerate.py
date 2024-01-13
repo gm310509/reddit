@@ -321,7 +321,9 @@ def processPost(postData, targetYear, targetMonth, observationTs):
     postId = postData["name"]             # the postId is what is used to get the next page of posts.
     titleText = postData["title"]         # Title of the post
 
-    removedFlag = postData["removed"]     # Has this post been removed?
+    removedFlag = False
+    if "removed"in postData:
+      postData["removed"]     # Has this post been removed?
 
     selfText = postData["selftext"]       # The body of the post.
     commentCnt = postData["num_comments"] # Number of comments attached to the post.
