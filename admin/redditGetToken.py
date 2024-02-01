@@ -10,9 +10,8 @@ def getToken(verbose = False, authenticatorToken = None):
     print("reddit client Id: {}".format(redditSecrets.redditClientId))
     print("reddit user Id:   {}".format(redditSecrets.redditUserId))
 
-  userAgent = "{}/0.0.1".format(redditSecrets.redditAppName)
   if verbose:
-    print("user agent:       {}".format(userAgent))
+    print("user agent:       {}".format(redditSecrets.userAgent))
 
   # exit(1)
 
