@@ -1,0 +1,47 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : 18 Dec 2023, 7:40:35 pm
+    Author     : gm310509
+*/
+
+p {
+    color: Black;
+}
+
+p.errorText {
+    color: #800000;
+}
+
+table,th,td {
+    border: 1px solid darkgray;
+    border-collapse: collapse;
+    margin: 0 0 0 0;
+}
+
+th {
+    border: inherit;
+    border-bottom: 2px solid darkgray;
+    border-left: 1px solid darkgray;
+    border-collapse: collapse;
+    margin: 0 0 0 0;
+}
+
+td,th,tr {
+    padding-left: 10px; padding-right: 10px;
+    margin-left: 10px; margin-right: 10px;
+}
+
+td.rightAlign {
+    text-align: right;
+    padding: inherit;
+    margin: inherit;
+}
+
+
+/* CSS inherit from another class ?
+ * For example, How do I inherit the first th definition, but simply change the bototm-border attribute only?
+ * Put another way, how do I simply make the second th class so that it doesn't need the border-left attribute?
+ */
