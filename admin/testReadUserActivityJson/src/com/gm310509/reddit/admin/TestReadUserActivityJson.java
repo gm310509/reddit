@@ -4,7 +4,7 @@
  */
 package com.gm310509.reddit.admin;
 
-import com.gm310509.reddit.comms.Token;
+import com.gm310509.reddit.utility.Token;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import java.io.BufferedReader;
@@ -50,13 +50,16 @@ public class TestReadUserActivityJson {
         }
         
         boolean online = false;
+        boolean url = true;
         boolean invalid = false;
         for (String arg : args) {
             if (arg.startsWith("-")) {
                 if (arg.equalsIgnoreCase("-o")) {
                     online = true;
                     break;
-                } else if (arg.equalsIgnoreCase("-h")) {
+                } else if (arg.equalsIgnoreCase("-u")) {
+                    url = true;
+                }else if (arg.equalsIgnoreCase("-h")) {
                     usage();
                     System.exit(0);
                 } else {
@@ -65,13 +68,14 @@ public class TestReadUserActivityJson {
                 }
             }
         }
-        if (invalid) {
+        if (invalid || (url && online)) {
             System.out.println("Invalid parameter.");
             usage();
             System.exit(1);
         }
         
         System.out.println(online ? "Online" : "Offline");
+        System.out.println(url ? "Url" : "user");
 
         for (String userName : args) {
             if (userName.startsWith("-")) {
@@ -79,6 +83,8 @@ public class TestReadUserActivityJson {
             }
             if (online) {
                 processUserActivityFromUrl(userName);
+            } else if (url) {
+                processUrlRequest(userName);
             } else {
                 processUserActivityFromFile(userName);
             }
@@ -89,6 +95,7 @@ public class TestReadUserActivityJson {
         System.out.println("Usage:");
         System.out.println("  java com.gm310509.reddit.adminTestReadUserActivity [-o] userName [userName ...]");
         System.out.println("  java com.gm310509.reddit.adminTestReadUserActivity -h");
+        System.out.println("  java com.gm310509.reddit.adminTestReadUserActivity -u url.json");
         System.out.println("Where:");
         System.out.println("  -o enables online queries.");
         System.out.println("  -h prints this help and exits.");
@@ -286,5 +293,57 @@ public class TestReadUserActivityJson {
         }
         System.out.println(String.format("Total: %d subs, %d posts", summary.size(), totalPosts));
         System.out.println();
+    }
+    
+    
+    private void processUrlRequest(String urlText) {
+        System.out.println(urlText);
+
+        String redditAppName = "gmcMod";
+        String appName = String.format("%s/0.0.1", redditAppName);
+
+        int retryCnt = 0;
+        
+        try {
+            System.out.println(String.format("Reading data for: %s (attempt: %d)", urlText, retryCnt));
+            // TODO: If the request returns a 401 error (not authorised), try
+            // requesting a new token, then resubmit the query.
+            // If it fails after the second attempt, give up.
+            // If we are retrying to get a token, force a fetch from the OAUTH2 server.
+            token.redditGetToken(retryCnt != 0);
+
+            URL url = new URL(urlText);
+//            URL url = new URI(urlText).toURL();
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(5000);   // Connection timeout in ms
+            conn.setReadTimeout(5000);
+            conn.setRequestProperty("User-Agent", appName);
+            conn.setRequestProperty("Authorization", getBearerAuthenticationHeader(token.getToken()));
+
+//            System.out.println(String.format("%d Header fields", conn.getHeaderFields().size()));
+//            for (String key : conn.getHeaderFields().keySet()) {
+//                System.out.println(String.format("key=%s,value=%s", key, conn.getRequestProperty(key)));
+//            }
+
+            BufferedReader reader;
+            int status = conn.getResponseCode();
+            if (status >= 300) {
+                reader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+            } else {
+                reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            }
+
+            String inLine = "";
+            while ((inLine = reader.readLine()) != null) {
+                System.out.println(inLine);
+            }
+            reader.close();
+
+            retryCnt++;
+
+        } catch (IOException e) {
+            System.out.println("IOException" + e.toString());
+        }   
     }
 }
