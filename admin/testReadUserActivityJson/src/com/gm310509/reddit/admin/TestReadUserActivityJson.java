@@ -4,27 +4,19 @@
  */
 package com.gm310509.reddit.admin;
 
+import com.gm310509.reddit.comms.Token;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Map;
-import java.net.http.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Base64;
 
 
 
@@ -35,7 +27,6 @@ import java.util.Base64;
 public class TestReadUserActivityJson {
 
     private static final String tokenFileName = "token.txt";
-    
     private static Gson gson = new Gson();
     
     /**
@@ -123,142 +114,14 @@ public class TestReadUserActivityJson {
         return null;
     }
     
-
-    private String getBasicAuthenticationHeader(String username, String password) {
-        String valueToEncode = username + ":" + password;
-        return "Basic " + Base64.getEncoder().encodeToString(valueToEncode.getBytes());
-    }
+    
     private String getBearerAuthenticationHeader(String token) {
 //        String valueToEncode = token;
 //        return "Bearer " + Base64.getEncoder().encodeToString(valueToEncode.getBytes());
         return "Bearer " + token;
     }
 
-    /* Potential repsonses from reddit:
-    *  Wrong credentials or expired token:
-    *   {"message": "Unauthorized", "error": 401}
-    *
-    *  User not authorised to access the registered "reddit App":
-    *   {'error': 'invalid_grant'}
-    *
-    *  Token:
-    *   {'access_token': 'eyJhbGciOiJSUzI1NiIsImtpZCI6IlNIQTI1NjpzS3dsMnlsV0VtMjVmcXhwTU40cWY4MXE2OWFFdWFyMnpLMUdhVGxjdWNZIiwidHlwIjoiSldUIn0.eyJzdWIiOiJ1c2VyIiwiZXhwIjoxNzA2ODYwMjA3LjY4OTM3OSwiaWF0IjoxNzA2NzczODA3LjY4OTM3OSwianRpIjoiR3JJeUNtdDQ0VFJmTjRHQjhUd3Ayd2QzR0k3emVBIiwiY2lkIjoiSkZCbkZuYU9hOU1yb1JlTGtKZTBGUSIsImxpZCI6InQyX3I4aDh2YnF4dCIsImFpZCI6InQyX3I4aDh2YnF4dCIsImxjYSI6MTcwNDIwMDQ2OTA0Mywic2NwIjoiZUp5S1Z0SlNpZ1VFQUFEX193TnpBU2MiLCJmbG8iOjl9.q5Wf5pc6ST0dwYGF14AUiVEQ_o7vJWePARlROM3OJCI3GcaBkUUibKz3awu32a1nuUp6E0Zpg69GQ-gZKpYUiRoqxnNQdsdLRXDVRyyc5qnrhMAWhpMphW6R62uPI_JQvv1CtrSAAz6WaE2Z6eBoTHhzSwdbH6lm3O9NItHMY588O4bK46rV2WfTC_D-dwRIKLzblC51Snn8IDgOWj154rY8XNApDrKtLOtazRPmWZWJWhAxZ2cvqfHWKgSfjS54ev3Q8Niwz8QQstByW8Sm9D_PPF9406hxyLT-fmxUA9CEXsZHB1lGPznReCDqwCGRuvtvntMJ09YRCBl4sBLOZg', 'token_type': 'bearer', 'expires_in': 86400, 'scope': '*'}
-    */
-    private String _token = null;
-    
-    public String redditGetToken() {
-        return redditGetToken(false);
-    }
-    
-    public String redditGetToken(boolean force) {
-
-        Path tokenFilePath = Paths.get(tokenFileName);
-        if (!force) {           // If we are not forcing a token retrieval, then 
-            if (_token != null) {    // check to see if we already have a token
-                System.out.println("Reusing existing token: " + _token);
-                return _token;       // we do have a token, so return it.
-            }
-        
-            if (Files.exists(tokenFilePath)) {
-                System.out.println(String.format("Attempting to read existing token from %s", tokenFileName));
-                try {
-                    BufferedReader br = new BufferedReader(new FileReader(tokenFilePath.toFile()));
-                    StringBuilder fileText = new StringBuilder();
-                    String inLine;
-                    while ((inLine = br.readLine()) != null) {
-                        fileText.append(inLine);
-                    }
-                    _token = fileText.toString();
-                    return _token;
-                } catch (FileNotFoundException e) {
-                    System.out.println(String.format("token file %s not found - requesting new token", tokenFileName));
-                } catch (IOException e) {
-                    System.out.println(String.format("IO Exception reading %s - requesting new token", tokenFileName));
-                }
-            }
-        } else {
-            System.out.println("Force is true, requesting a new token from the OAUTH2 server");
-        }
-        
-        // Either we are forcing the request of a new token, or, we don't
-        // already have one.
-        System.out.println("requesting oauth2 token");
-        
-//        HttpClient client = HttpClient.newHttpClient();
-        HttpClient client = HttpClient.newHttpClient();
-        
-        String oAuth2UrlText = "https://www.reddit.com/api/v1/access_token";
-        
-        String userId = "gm310509Service";
-        String password = "m!bElu<_4m/>";
-        String redditAppName = "gmcMod";
-        //My app details provided by reddit after registration
-        String redditClientId = "JFBnFnaOa9MroReLkJe0FQ";           // ~22 chars
-        String redditClientPwd = "ai6ZJiSnWwxQXVRh-hp11ejVZi75Ig";   // ~30 chars
-        String appName = String.format("%s/0.0.1", redditAppName);
-
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(oAuth2UrlText))
-            .header("Authorization", getBasicAuthenticationHeader(redditClientId, redditClientPwd))
-            .header("User-Agent", appName)
-            .POST(HttpRequest.BodyPublishers.ofString(String.format("grant_type=password&username=%s&password=%s", userId, password)))
-            .build();
-        
-        try {
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            int status = response.statusCode();
-
-            System.out.println(String.format("Status: %d", status));
-
-            gson = new Gson();
-            StringReader jsonStringReader = new StringReader(response.body());
-            Map<?,?> map = gson.fromJson(jsonStringReader, Map.class);
-            
-            if (map.containsKey("message")) {
-                String message = (String) map.get("message");
-                Double errorCode = (Double) map.get("error");
-                System.out.println("Error reply from reddit:");
-                System.out.println("message: " + message);
-                System.out.println("error: " + errorCode);
-            } else if (map.containsKey("error")) {
-                String errorMessage = (String) map.get("error");
-                System.out.println("error: " + errorMessage);
-            } else if (map.containsKey("access_token")) {
-                System.out.println("Got a token!");
-                _token = (String) map.get("access_token");
-                String tokenType = (String) map.get("token_type");
-                Double expires = (Double) map.get("expires_in");
-                String scope = (String) map.get("scope");
-                System.out.println("token: " + _token);
-                System.out.println("type: " + tokenType + ", scope: " + scope + ", expires: " + expires);
-            } else {
-                System.out.println("*** Unrecognised oauth2 response");
-                System.out.println("Response to oAuth2 request: ");
-                System.out.println(response);
-                System.out.println("------\nBody:");
-                System.out.println(response.body());
-                System.out.println(String.format("type: %s", response.getClass().getCanonicalName()));
-            }
-
-        } catch (IOException e) {
-            System.out.println("IOException attempting to retrieve token.");
-        } catch (InterruptedException e) {
-            System.out.println("Interrupted Exception attempting to retrieve token.");
-        }
-        
-        // Write the token out to our token file cache.
-        try {
-            Files.deleteIfExists(tokenFilePath);
-            
-            BufferedWriter bw = new BufferedWriter(new FileWriter(tokenFilePath.toFile()));
-            bw.write(_token);
-            bw.close();
-        } catch (IOException e) {
-            System.out.println(String.format("IO Error writing token to token file: %s", tokenFileName));
-            System.out.println(e.toString());
-        }
-        return _token;
-    }
+    private Token token = new Token(tokenFileName);
     
     public void processUserActivityFromUrl(String userName) {
         String urlText = String.format("https://oauth.reddit.com/user/%s.json?limit=100",userName);
@@ -278,7 +141,7 @@ public class TestReadUserActivityJson {
                 // requesting a new token, then resubmit the query.
                 // If it fails after the second attempt, give up.
                 // If we are retrying to get a token, force a fetch from the OAUTH2 server.
-                String token = redditGetToken(retryCnt != 0);
+                token.redditGetToken(retryCnt != 0);
                 
                 URL url = new URL(urlText);
     //            URL url = new URI(urlText).toURL();
@@ -287,7 +150,7 @@ public class TestReadUserActivityJson {
                 conn.setConnectTimeout(5000);   // Connection timeout in ms
                 conn.setReadTimeout(5000);
                 conn.setRequestProperty("User-Agent", appName);
-                conn.setRequestProperty("Authorization", getBearerAuthenticationHeader(token));
+                conn.setRequestProperty("Authorization", getBearerAuthenticationHeader(token.getToken()));
 
     //            System.out.println(String.format("%d Header fields", conn.getHeaderFields().size()));
     //            for (String key : conn.getHeaderFields().keySet()) {
