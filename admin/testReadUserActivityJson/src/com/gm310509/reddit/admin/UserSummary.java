@@ -43,21 +43,24 @@ public class UserSummary extends HashMap<String, SubActivityMetric> {
         this.name = name;
     }
     
-    public SubActivityMetric countPost(String subRedditName) {
+    public SubActivityMetric countPost(String subRedditName, int votes) {
         SubActivityMetric metric = retrieve(subRedditName);
         metric.incrementPostCount();
+        metric.recordKarma(votes);
         return metric;
     }
     
-    public SubActivityMetric countComment(String subRedditName) {
+    public SubActivityMetric countComment(String subRedditName, int votes) {
         SubActivityMetric metric = retrieve(subRedditName);
         metric.incrementCommentCount();
+        metric.recordKarma(votes);
         return metric;
     }
     
-    public SubActivityMetric countOther(String subRedditName) {
+    public SubActivityMetric countOther(String subRedditName, int votes) {
         SubActivityMetric metric = retrieve(subRedditName);
         metric.incrementOtherCount();
+        metric.recordKarma(votes);
         return metric;
     }
 

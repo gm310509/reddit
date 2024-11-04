@@ -8,8 +8,10 @@ import com.gm310509.reddit.utility.Token;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -50,16 +52,17 @@ public class TestReadUserActivityJson {
         }
         
         boolean online = false;
-        boolean url = true;
+        boolean url = false;
         boolean invalid = false;
         for (String arg : args) {
             if (arg.startsWith("-")) {
                 if (arg.equalsIgnoreCase("-o")) {
                     online = true;
-                    break;
+//                    break;
                 } else if (arg.equalsIgnoreCase("-u")) {
                     url = true;
-                }else if (arg.equalsIgnoreCase("-h")) {
+//                    break;
+                } else if (arg.equalsIgnoreCase("-h")) {
                     usage();
                     System.exit(0);
                 } else {
@@ -229,6 +232,7 @@ public class TestReadUserActivityJson {
                         if (pm instanceof Map postMeta) {
                             String postKind = "unknown";
                             String postSubRedditName = "unknown";
+                            int votes = 0;
                             if (postMeta.containsKey("kind")) {
                                 postKind = (String) postMeta.get("kind");
                             }
@@ -236,15 +240,18 @@ public class TestReadUserActivityJson {
                                 Object pd = postMeta.get("data");
                                 if (pd instanceof Map postData) {
                                     postSubRedditName = (String) postData.get("subreddit");
+                                    if (postData.containsKey("ups")) {
+                                        votes = ((Double) postData.get("ups")).intValue();
+                                    }
                                 }
                             }
 //                            System.out.println(String.format("Post %s to r/%s", postKind, postSubRedditName));
                             if ("t3".equalsIgnoreCase(postKind)) {
-                                summary.countPost(postSubRedditName);
+                                summary.countPost(postSubRedditName, votes);
                             } else if ("t1".equalsIgnoreCase(postKind)) {
-                                summary.countComment(postSubRedditName);
+                                summary.countComment(postSubRedditName, votes);
                             } else {
-                                summary.countOther(postSubRedditName);
+                                summary.countOther(postSubRedditName, votes);
                             }
                         }
                     }
@@ -276,17 +283,21 @@ public class TestReadUserActivityJson {
         }
         
         System.out.println(String.format("\nUser activity for %s:", summary.getName()));
-        System.out.println(String.format("sub reddit name                posts cmnts other total"));
+        System.out.println(String.format("sub reddit name                posts cmnts other total  |  karma   high    low  -veCnt"));
         int totalPosts = 0;
         for (SubActivityMetric metric : summary.values()) {
             int totalActivityInSub = metric.getPostCount() + metric.getCommentCount() + metric.getOtherCount();
             System.out.println(
-                String.format("%-30s %5d %5d %5d %5d",
+                String.format("%-30s %5d %5d %5d %5d  | %6d %6d %6d %6d",
                     metric.getSubredditName(),
                     metric.getPostCount(),
                     metric.getCommentCount(),
                     metric.getOtherCount(),
-                    totalActivityInSub
+                    totalActivityInSub,
+                    metric.getKarma(),
+                    metric.getMaxUpVote(),
+                    metric.getMaxDownVote(),
+                    metric.getNegativeScoreCnt()
                 )
             );
             totalPosts += totalActivityInSub;
@@ -302,48 +313,56 @@ public class TestReadUserActivityJson {
         String redditAppName = "gmcMod";
         String appName = String.format("%s/0.0.1", redditAppName);
 
+        String outputFileName;
         int retryCnt = 0;
-        
-        try {
-            System.out.println(String.format("Reading data for: %s (attempt: %d)", urlText, retryCnt));
-            // TODO: If the request returns a 401 error (not authorised), try
-            // requesting a new token, then resubmit the query.
-            // If it fails after the second attempt, give up.
-            // If we are retrying to get a token, force a fetch from the OAUTH2 server.
-            token.redditGetToken(retryCnt != 0);
+        int errorCode = 0;
+        do {
+            try {
+                System.out.println(String.format("Reading data for: %s (attempt: %d)", urlText, retryCnt));
+                // TODO: If the request returns a 401 error (not authorised), try
+                // requesting a new token, then resubmit the query.
+                // If it fails after the second attempt, give up.
+                // If we are retrying to get a token, force a fetch from the OAUTH2 server.
+                token.redditGetToken(retryCnt != 0);
 
-            URL url = new URL(urlText);
-//            URL url = new URI(urlText).toURL();
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(5000);   // Connection timeout in ms
-            conn.setReadTimeout(5000);
-            conn.setRequestProperty("User-Agent", appName);
-            conn.setRequestProperty("Authorization", getBearerAuthenticationHeader(token.getToken()));
+                URL url = new URL(urlText);
+    //            URL url = new URI(urlText).toURL();
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setConnectTimeout(5000);   // Connection timeout in ms
+                conn.setReadTimeout(5000);
+                conn.setRequestProperty("User-Agent", appName);
+                conn.setRequestProperty("Authorization", getBearerAuthenticationHeader(token.getToken()));
 
-//            System.out.println(String.format("%d Header fields", conn.getHeaderFields().size()));
-//            for (String key : conn.getHeaderFields().keySet()) {
-//                System.out.println(String.format("key=%s,value=%s", key, conn.getRequestProperty(key)));
-//            }
+    //            System.out.println(String.format("%d Header fields", conn.getHeaderFields().size()));
+    //            for (String key : conn.getHeaderFields().keySet()) {
+    //                System.out.println(String.format("key=%s,value=%s", key, conn.getRequestProperty(key)));
+    //            }
 
-            BufferedReader reader;
-            int status = conn.getResponseCode();
-            if (status >= 300) {
-                reader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-            } else {
-                reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                BufferedReader reader;
+                int status = conn.getResponseCode();
+                if (status >= 300) {
+                    reader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                    errorCode = 1;
+                } else {
+                    reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                }
+
+                outputFileName = String.format("response%d.json", retryCnt);
+                BufferedWriter writer = new BufferedWriter(new FileWriter(outputFileName));
+                String inLine = "";
+                while ((inLine = reader.readLine()) != null) {
+                    System.out.println(inLine);
+                    writer.write(inLine + "\n");
+                }
+                writer.close();
+                reader.close();
+
+                retryCnt++;
+                System.out.println(String.format("Response written to: %s", outputFileName));
+            } catch (IOException e) {
+                System.out.println("IOException" + e.toString());
             }
-
-            String inLine = "";
-            while ((inLine = reader.readLine()) != null) {
-                System.out.println(inLine);
-            }
-            reader.close();
-
-            retryCnt++;
-
-        } catch (IOException e) {
-            System.out.println("IOException" + e.toString());
-        }   
+        } while (errorCode != 0 && retryCnt <= 2);
     }
 }
