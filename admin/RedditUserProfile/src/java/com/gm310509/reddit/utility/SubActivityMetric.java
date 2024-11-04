@@ -98,6 +98,59 @@ public class SubActivityMetric {
     }
 
     
+    private int karma;
+
+    /**
+     * Get the value of karma
+     *
+     * @return the value of karma
+     */
+    public int getKarma() {
+        return karma;
+    }
+
+    /**
+     * Set the value of karma
+     *
+     * @param karma new value of karma
+     */
+    public void setKarma(int karma) {
+        this.karma = karma;
+    }
+    
+    private int maxUpVote = -999999;
+    
+    public int getMaxUpVote() {
+        return this.maxUpVote;
+    }
+
+    private int maxDownVote = 0;
+    
+    public int getMaxDownVote() {
+        return this.maxDownVote;
+    }
+
+    private int negativeScoreCnt = 0;
+    
+    public int getNegativeScoreCnt() {
+        return this.negativeScoreCnt;
+    }
+
+    public int recordKarma(int votes) {
+        this.karma += votes;
+        if (votes > this.maxUpVote) {
+            this.maxUpVote = votes;
+        }
+        if (votes < this.maxDownVote) {
+            this.maxDownVote = votes;
+        }
+        
+        if (votes < 0) {
+            this.negativeScoreCnt++;
+        }
+        return this.karma;
+    }
+    
     public int incrementPostCount() {
         return ++postCount;
     }
