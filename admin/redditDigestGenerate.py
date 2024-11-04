@@ -86,6 +86,10 @@ scoredModsChoiceDict = {}
 # value: list of posts having this score.
 topPostsDict = {}
 
+# Hot Tip Posts grouped by a score.
+# Key: score
+# value: list of posts having this score.
+scoredHotTipPostsDict = {}
 
 
 MAX_TITLE_LEN = 40
@@ -167,6 +171,10 @@ def summarisePosts():
     elif post.linkFlairText != None and "Mod's Choice!" in post.linkFlairText:
       print(f"******    Adding post {post.name} with flair {post.linkFlairText} to mods choice")
       sortedByScore(scoredModsChoiceDict, post.score, post)
+    elif post.linkFlairText != None and "Hot Tip!" in post.linkFlairText:
+      print(f"******    Adding {post.name} with flair {post.linkFlairText} to hot tips")
+      sortedByScore(scoredHotTipPostsDict, post.score, post)
+
 
     # Place the post into the correct score tier for the final determination of
     # the top 10 (or so) posts
@@ -239,6 +247,15 @@ def generateDigestMarkdown(rootDir, markdownFileName, subredditName, targetDate)
             postCnt = postCnt + 1
             postToMarkdownTableRow(mdFile, post)
 
+
+    if (len(scoredHotTipPostsDict) > 0):
+      postTableMarkdownHeader(mdFile, "Hot Tips")
+      postCnt = 0
+      for postScore in sorted(scoredHotTipPostsDict, reverse = True):
+        for post in scoredHotTipPostsDict[postScore]:
+          if not post.removed:
+            postCnt = postCnt + 1
+            postToMarkdownTableRow(mdFile, post)
 
     # Output the "top 10 (or so) posts" heading and posts table.
     postTableMarkdownHeader(mdFile, "Top Posts")
@@ -323,7 +340,7 @@ def processPost(postData, targetYear, targetMonth, observationTs):
 
     removedFlag = False
     if "removed"in postData:
-      postData["removed"]     # Has this post been removed?
+      removedFlag = postData["removed"]     # Has this post been removed?
 
     selfText = postData["selftext"]       # The body of the post.
     commentCnt = postData["num_comments"] # Number of comments attached to the post.
