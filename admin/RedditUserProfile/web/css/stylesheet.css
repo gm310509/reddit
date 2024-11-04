@@ -13,6 +13,17 @@ p {
 
 p.errorText {
     color: #800000;
+    font-size: 80%;
+}
+
+p.version {
+    color: #808080;
+    font-size: 80%;
+}
+
+span.annotation {
+    color: #808080;
+    font-size: 80%;
 }
 
 table,th,td {
