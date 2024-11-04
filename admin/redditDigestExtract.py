@@ -19,7 +19,7 @@ def processPost(postData):
 
   removedFlag = False
   if "removed" in postData:
-    postData["removed"]
+    removedFlag = postData["removed"]
   if removedFlag:
     print(f"Skipping removed post {lastPostId} from u/{author} - title: {titleText}")
 
