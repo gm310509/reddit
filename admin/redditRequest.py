@@ -90,6 +90,7 @@ if __name__ == "__main__":
   requestText = "https://oauth.reddit.com/r/arduino/comments/11uqm3f/chatgpt_is_a_menace/"
   requestText = "https://www.reddit.com/r/arduino/comments/12dxdam/diy_arduino_video_game_console_arduino_pro_micro/"
   requestText = "https://oauth.reddit.com/r/arduino/comments/15cdeya/new_to_all_this_struggling_to_set_it_up"
+  requestText = "https://oauth.reddit.com/r/arduino/comments/1gkufzs/fritzing"
   
   #requestText = "https://oauth.reddit.com/r/arduino/about/contributors"
   #requestText = "https://oauth.reddit.com/r/arduino/about/moderators"#

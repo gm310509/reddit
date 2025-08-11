@@ -12,6 +12,7 @@ def getToken(verbose = False, authenticatorToken = None):
 
   if verbose:
     print("user agent:       {}".format(redditSecrets.userAgent))
+    print("auth token:       {}".format(authenticatorToken))
 
   # exit(1)
 
