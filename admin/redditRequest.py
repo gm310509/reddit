@@ -6,7 +6,7 @@ import requests
 import json
 
 
-def redditRequest(requestText, requestParameters,  responseFilename = None, sendToken = True, verbose = False, authToken = None):
+def redditRequest(requestText, requestParameters,  responseFilename = None, sendToken = True, verbose = False, authToken = None, post = False):
 
   userAgent = "generic/0.0.1"
   if (sendToken):
@@ -29,7 +29,10 @@ def redditRequest(requestText, requestParameters,  responseFilename = None, send
     # add authorization to our headers dictionary
     headers = {**headers, **{'Authorization': f"bearer {redditSecrets.TOKEN}"}}
 
-  res = requests.get(requestText, headers=headers, params=requestParameters)
+  if (post):
+    res = requests.post(requestText, headers=headers, data=requestParameters)
+  else:
+    res = requests.get(requestText, headers=headers, params=requestParameters)
   jsonStr = ""
   if res.status_code != 200:
     print(f"ERROR: Response code: {res.status_code}: {res}")
@@ -95,6 +98,8 @@ if __name__ == "__main__":
   #requestText = "https://oauth.reddit.com/r/arduino/about/contributors"
   #requestText = "https://oauth.reddit.com/r/arduino/about/moderators"#
   #requestText = "https://oauth.reddit.com/r/arduino/about"
+  #requestText = "https://oauth.reddit.com/r/arduino/about"
+  #requestText = "https://oauth.reddit.com/r/arduino/about.json"
   #requestText = "https://www.reddit.com/r/arduino/about.json"           # Generates an error 403 (forbidden) - probably because of the token.
             # however, curl -A "testClient/1.0" https://www.reddit.com/r/arduino/about.json        # works just fine in cygwin.
 
@@ -102,6 +107,8 @@ if __name__ == "__main__":
   #requestText = "https://oauth.reddit.com/subreddits/mine/subscriber"
   #requestText = "https://oauth.reddit.com/user/gm310509/about"
   #requestText = "https://oauth.reddit.com/user/gm310509/overview"
+  requestText = "https://oauth.reddit.com/user/gm310509/new"
+  requestParameters = { "limit" : 5}
   
   print("Sending: {}".format(requestText))
   responseFileName = "response.json"
